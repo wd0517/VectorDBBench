@@ -31,9 +31,9 @@ class TiDBServeless(VectorDB):
         self.case_config = db_case_config
         self.db_config = db_config
 
-        if drop_old:
-            self._drop_table()
-            self._create_table()
+        # if drop_old:
+        #     self._drop_table()
+        #     self._create_table()
 
     @contextmanager
     def init(self) -> None:
@@ -97,25 +97,20 @@ class TiDBServeless(VectorDB):
         metadata: list[int],
         **kwargs,
     ) -> (int, Exception):
+        return len(metadata), None
         conn, cursor = self._ensure_connection()
         try:
-            items = {
-                "id": metadata,
-                "embedding": embeddings
-            }
-            
-            batch_size = 2
+            batch_size = 5000
             for i in range(0, len(metadata), batch_size):
                 batch_ids = metadata[i:i+batch_size]
                 batch_embeddings = embeddings[i:i+batch_size]
                 if len(batch_ids) == 0:
                     break
-                log.warning(type(batch_embeddings[0]))
-                log.warning('\n\n\n\n\n')
 
-                cursor.executemany(f'INSERT INTO {self.table_name} (id, embedding) VALUES (%s, "%s");', list(zip(batch_ids, batch_embeddings)))
+                batch_embeddings = list(map(lambda x: str(list(x)), batch_embeddings))
+
+                cursor.executemany(f'INSERT INTO {self.table_name} (id, embedding) VALUES (%s, %s)', list(zip(batch_ids, batch_embeddings)))
                 conn.commit()
-                break
             return len(metadata), None
         except Exception as e:
             log.warning(f"Failed to insert data into pgvector table ({self.table_name}), error: {e}")   
@@ -130,6 +125,6 @@ class TiDBServeless(VectorDB):
     ) -> list[int]:
         conn, cursor = self._ensure_connection()
         search_param =self.case_config.search_param()
-        cursor.execute(f'SELECT id FROM "{self.table_name}" ORDER BY {search_param["metric_func"]}(embedding, "{query}") LIMIT {k};')
-        result = self.cursor.fetchall()
+        cursor.execute(f'SELECT id FROM {self.table_name} ORDER BY {search_param["metric_func"]}(embedding, "{query}") LIMIT {k};')
+        result = cursor.fetchall()
         return [int(i[0]) for i in result]
