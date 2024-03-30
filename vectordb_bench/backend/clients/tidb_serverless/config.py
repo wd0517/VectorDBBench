@@ -2,8 +2,8 @@ from pydantic import SecretStr, BaseModel
 from ..api import DBConfig, DBCaseConfig, IndexType, MetricType
 
 class TiDBServerlessConfig(DBConfig):
-    host: str = "gateway01.us-east-1.dev.shared.aws.tidbcloud.com"
-    user_name: SecretStr = "3SHHfyhwA3JfDph.root"
+    host: str = "gateway01.us-east-1.staging.shared.aws.tidbcloud.com"
+    user_name: SecretStr = "2swCHaPNnr34x2u.root"
     password: SecretStr
     port: int = 4000
     db_name: str = "test"

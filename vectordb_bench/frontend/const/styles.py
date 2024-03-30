@@ -46,7 +46,7 @@ DB_TO_ICON = {
     DB.PgVectoRS: "https://assets.zilliz.com/PG_Vector_d464f2ef5f.png",
     DB.Redis: "https://assets.zilliz.com/Redis_Cloud_74b8bfef39.png",
     DB.Chroma: "https://assets.zilliz.com/chroma_ceb3f06ed7.png",
-    DB.TiDBServerless: "https://static.pingcap.com/files/2023/07/09063705/TiDB-logo.png",
+    DB.TiDBServerless: "https://img2.pingcap.com/forms/3/d/3d7fd5f9767323d6f037795704211ac44b4923d6.png",
 }
 
 # RedisCloud color: #0D6EFD
