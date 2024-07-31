@@ -147,7 +147,7 @@ class TiDBServeless(VectorDB):
             with conn.cursor() as cursor:
                 try:
                     cursor.execute(
-                        f'SELECT ROWS_STABLE_NOT_INDEXED FROM information_schema.tiflash_indexes WHERE TIDB_DATABASE = "{database}" AND TIDB_TABLE = "{self.table_name}"'
+                        f'SELECT MAX(ROWS_STABLE_NOT_INDEXED) FROM information_schema.tiflash_indexes WHERE TIDB_DATABASE = "{database}" AND TIDB_TABLE = "{self.table_name}"'
                     )
                     result = cursor.fetchone()
                     return result[0]
