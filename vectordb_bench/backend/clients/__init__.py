@@ -36,6 +36,7 @@ class DB(Enum):
     Chroma = "Chroma"
     AWSOpenSearch = "OpenSearch"
     Test = "test"
+    MongodbCLoud = "MongodbCloud"
 
 
     @property
@@ -92,6 +93,10 @@ class DB(Enum):
         if self == DB.AWSOpenSearch:
             from .aws_opensearch.aws_opensearch import AWSOpenSearch
             return AWSOpenSearch
+    
+        if self == DB.MongodbCLoud:
+            from .mongodb_cloud.mongodb_cloud import MongodbCloud
+            return MongodbCloud
 
     @property
     def config_cls(self) -> Type[DBConfig]:
@@ -147,6 +152,10 @@ class DB(Enum):
         if self == DB.AWSOpenSearch:
             from .aws_opensearch.config import AWSOpenSearchConfig
             return AWSOpenSearchConfig
+    
+        if self == DB.MongodbCLoud:
+            from .mongodb_cloud.config import MongodbCloudConfig
+            return MongodbCloudConfig
 
     def case_config_cls(self, index_type: IndexType | None = None) -> Type[DBCaseConfig]:
         if self == DB.Milvus:
