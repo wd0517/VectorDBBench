@@ -108,10 +108,13 @@ class TiDBServeless(VectorDB):
         self._compact_tiflash()
         log.info("Successful compacted tiflash replica")
 
+        log_reduce_seq = 0
         while True:
             pending_rows = self._get_tiflash_index_pending_rows()
             if pending_rows > 0:
-                log.info(f"Index not fully built, pending rows: {pending_rows}")
+                if log_reduce_seq % 15 == 0:
+                    log.info(f"Index not fully built, pending rows: {pending_rows}")
+                log_reduce_seq += 1
                 time.sleep(2)
             else:
                 break
@@ -147,7 +150,7 @@ class TiDBServeless(VectorDB):
             with conn.cursor() as cursor:
                 try:
                     cursor.execute(
-                        f'SELECT MAX(ROWS_STABLE_NOT_INDEXED) FROM information_schema.tiflash_indexes WHERE TIDB_DATABASE = "{database}" AND TIDB_TABLE = "{self.table_name}"'
+                        f'SELECT SUM(ROWS_STABLE_NOT_INDEXED) FROM information_schema.tiflash_indexes WHERE TIDB_DATABASE = "{database}" AND TIDB_TABLE = "{self.table_name}"'
                     )
                     result = cursor.fetchone()
                     return result[0]
