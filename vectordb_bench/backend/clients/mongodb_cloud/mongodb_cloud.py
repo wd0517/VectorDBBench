@@ -1,8 +1,10 @@
 """Wrapper around the Pinecone vector database over VectorDB"""
+
 import logging
 from contextlib import contextmanager
 from typing import Type
 from pymongo.mongo_client import MongoClient
+from pymongo.operations import SearchIndexModel
 from pymongo.server_api import ServerApi
 
 from ..api import VectorDB, DBConfig, DBCaseConfig, EmptyDBCaseConfig, IndexType
@@ -17,24 +19,41 @@ class MongodbCloud(VectorDB):
         self,
         dim: int,
         db_config: dict,
-        db_case_config: DBCaseConfig | None,
+        db_case_config: MongodbCloudIndexConfig,
         collection_name: str = "test",
         drop_old: bool = False,
         **kwargs,
     ):
         """Initialize wrapper around the milvus vector database."""
         self.dim = dim
+        self.case_config = db_case_config
         self.database = db_config["database"]
         self.collection_name = collection_name
         self.connection_string = db_config["connection_string"]
         self.case_config = db_case_config
 
-        client = MongoClient(self.connection_string, server_api=ServerApi('1'))
-        client.admin.command('ping')
+        client = MongoClient(self.connection_string, server_api=ServerApi("1"))
+        client.admin.command("ping")
         db = client.get_database(self.database)
         if drop_old:
             db.drop_collection(collection_name)
+
             db.create_collection(collection_name)
+            search_index_model = SearchIndexModel(
+                definition={
+                    "fields": [
+                        {
+                            "type": "vector",
+                            "numDimensions": self.dim,
+                            "path": "embedding",
+                            "similarity": self.case_config.index_param()["similarity"],
+                        }
+                    ]
+                },
+                name="vector_index",
+                type="vectorSearch",
+            )
+            db.get_collection(collection_name).create_search_index(model=search_index_model)
 
     @classmethod
     def config_cls(cls) -> Type[DBConfig]:
@@ -46,16 +65,17 @@ class MongodbCloud(VectorDB):
 
     @contextmanager
     def init(self) -> None:
-        self.client = MongoClient(self.connection_string, server_api=ServerApi('1'))
-        self.collection = self.client.get_database(self.database).get_collection(self.collection_name)
+        self.client = MongoClient(self.connection_string, server_api=ServerApi("1"))
+        self.collection = self.client.get_database(self.database).get_collection(
+            self.collection_name
+        )
         yield
 
     def ready_to_load(self):
         pass
 
     def optimize(self):
-        # TODO: Create vector index
-        pass
+
 
     def insert_embeddings(
         self,
@@ -92,20 +112,20 @@ class MongodbCloud(VectorDB):
         search_param = self.case_config.search_param()
         pipeline = [
             {
-                '$vectorSearch': {
-                    'index': 'vector_index',
-                    'path': 'embedding',
-                    'queryVector': query,
-                    # Set numCandidates equal to k to archive lowest latency
-                    'numCandidates': k,
-                    'limit': k,
+                "$vectorSearch": {
+                    "index": "vector_index",
+                    "path": "embedding",
+                    "queryVector": query,
+                    "numCandidates": k,
+                    "limit": k,
                 }
-            }, {
-                '$project': {
-                    '_id': 1,
+            },
+            {
+                "$project": {
+                    "_id": 1,
                     "embedding": 0,
                 }
-            }
+            },
         ]
         result = self.collection.aggregate(pipeline)
         return [int(r["_id"]) for r in result]

@@ -170,6 +170,10 @@ class DB(Enum):
         if self == DB.TiDBServerless:
             from .tidb_serverless.config import TiDBServerlessIndexConfig
             return TiDBServerlessIndexConfig
+        
+        if self == DB.MongodbCloud:
+            from .mongodb_cloud.config import MongodbCloudIndexConfig
+            return MongodbCloudIndexConfig
 
         # DB.Pinecone, DB.Chroma, DB.Redis
         return EmptyDBCaseConfig
