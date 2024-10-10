@@ -81,11 +81,11 @@ class TiDBServeless(VectorDB):
 
     def _create_table(self):
         with self._ensure_connection() as conn:
-            index_param = self.case_config.index_param()
+            index_fn = self.case_config.search_param()
             with conn.cursor() as cursor:
                 try:
                     cursor.execute(
-                        f'CREATE TABLE IF NOT EXISTS {self.table_name} (id BIGINT PRIMARY KEY, embedding VECTOR({self.dim}) COMMENT "hnsw(distance={index_param["metric"]})" );'
+                        f'CREATE TABLE IF NOT EXISTS {self.table_name} (id BIGINT PRIMARY KEY, embedding VECTOR({self.dim}), VECTOR INDEX (({index_fn["metric_func"]}(embedding))) );'
                     )
                     conn.commit()
                 except Exception as e:
