@@ -33,6 +33,7 @@ class DB(Enum):
     Redis = "Redis"
     Chroma = "Chroma"
     TiDBServerless = "TiDBServerless"
+    MongodbCloud = "MongodbCloud"
 
 
     @property
@@ -82,6 +83,10 @@ class DB(Enum):
             from .tidb_serverless.tidb import TiDBServeless
             return TiDBServeless
 
+        if self == DB.MongodbCloud:
+            from .mongodb_cloud.mongodb_cloud import MongodbCloud
+            return MongodbCloud
+
     @property
     def config_cls(self) -> Type[DBConfig]:
         """Import while in use"""
@@ -128,6 +133,10 @@ class DB(Enum):
         if self == DB.TiDBServerless:
             from .tidb_serverless.config import TiDBServerlessConfig
             return TiDBServerlessConfig
+        
+        if self == DB.MongodbCloud:
+            from .mongodb_cloud.config import MongodbCloudConfig
+            return MongodbCloudConfig
 
     def case_config_cls(self, index_type: IndexType | None = None) -> Type[DBCaseConfig]:
         if self == DB.Milvus:

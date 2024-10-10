@@ -1,7 +1,7 @@
 grpcio==1.53.0
 grpcio-tools==1.53.0
 qdrant-client
-pinecone-client
+pinecone-client==2.2.4
 weaviate-client
 elasticsearch
 pgvector
@@ -21,3 +21,5 @@ environs
 pydantic<v2
 scikit-learn
 pymilvus
+pymysql
+pymongo
