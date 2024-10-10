@@ -28,3 +28,6 @@ class MongodbCloudIndexConfig(BaseModel, DBCaseConfig):
             "similarity": self.parse_metric(),
         }
         return params
+
+    def search_param(self) -> dict:
+        return {}
