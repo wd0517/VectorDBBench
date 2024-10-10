@@ -14,10 +14,10 @@ class PgVectorConfig(DBConfig):
         user_str = self.user_name.get_secret_value()
         pwd_str = self.password.get_secret_value()
         return {
-            "host" : self.host,
-            "port" : self.port,
-            "dbname" : self.db_name,
-            "user" : user_str,
+            "host": self.host,
+            "port": self.port,
+            "dbname": self.db_name,
+            "user": user_str,
             "password" : pwd_str
         }
 
@@ -63,16 +63,16 @@ class HNSWConfig(PgVectorIndexConfig):
 
     def index_param(self) -> dict:
         return {
-            "m" : self.M,
-            "efConstruction" : self.efConstruction,
+            "m": self.M,
+            "efConstruction": self.efConstruction,
             "metric" : self.parse_metric()
         }
 
     def search_param(self) -> dict:
         return {
-            "ef" : self.ef,
-            "metric_fun" : self.parse_metric_fun_str(),
-            "metric_fun_op" : self.parse_metric_fun_op(),
+            "ef": self.ef,
+            "metric_fun": self.parse_metric_fun_str(),
+            "metric_fun_op": self.parse_metric_fun_op(),
         }
 
 
@@ -83,15 +83,16 @@ class IVFFlatConfig(PgVectorIndexConfig):
 
     def index_param(self) -> dict:
         return {
-            "lists" : self.lists,
-            "metric" : self.parse_metric()
+            "lists": self.lists,
+            "index_type": self.index.value,
+            "metric": self.parse_metric(),
         }
 
     def search_param(self) -> dict:
         return {
-            "probes" : self.probes,
-            "metric_fun" : self.parse_metric_fun_str(),
-            "metric_fun_op" : self.parse_metric_fun_op(),
+            "probes": self.probes,
+            "metric_fun": self.parse_metric_fun_str(),
+            "metric_fun_op": self.parse_metric_fun_op(),
         }
 
 _pgvector_case_config = {
