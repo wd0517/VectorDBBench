@@ -1,8 +1,8 @@
-"""Wrapper around the Pinecone vector database over VectorDB"""
-
+import time
 import logging
 from contextlib import contextmanager
 from typing import Type
+from pymongo.collection import Collection
 from pymongo.mongo_client import MongoClient
 from pymongo.operations import SearchIndexModel
 from pymongo.server_api import ServerApi
@@ -15,6 +15,9 @@ log = logging.getLogger(__name__)
 
 
 class MongodbCloud(VectorDB):
+    client: MongoClient
+    collection: Collection
+
     def __init__(
         self,
         dim: int,
@@ -76,7 +79,21 @@ class MongodbCloud(VectorDB):
         pass
 
     def optimize(self):
-        pass
+        search_indexes = self.collection.list_search_indexes("vector_index")
+
+        while True:
+            index_is_building = False
+            last_status = ""
+            for index in search_indexes:
+                if index["status"] != "READY":
+                    index_is_building = True
+                    last_status = index["status"]
+                    break
+            if not index_is_building:
+                break
+
+            log.info(f"Index is still building, status={last_status}")
+            time.sleep(30)
 
     def insert_embeddings(
         self,
@@ -110,7 +127,6 @@ class MongodbCloud(VectorDB):
         filters: dict | None = None,
         timeout: int | None = None,
     ) -> list[tuple[int, float]]:
-        search_param = self.case_config.search_param()
         pipeline = [
             {
                 "$vectorSearch": {
