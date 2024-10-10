@@ -19,7 +19,7 @@ class MongodbCloud(VectorDB):
         self,
         dim: int,
         db_config: dict,
-        db_case_config: MongodbCloudIndexConfig,
+        db_case_config: DBCaseConfig,
         collection_name: str = "test",
         drop_old: bool = False,
         **kwargs,
@@ -30,7 +30,6 @@ class MongodbCloud(VectorDB):
         self.database = db_config["database"]
         self.collection_name = collection_name
         self.connection_string = db_config["connection_string"]
-        self.case_config = db_case_config
 
         client = MongoClient(self.connection_string, server_api=ServerApi("1"))
         client.admin.command("ping")
