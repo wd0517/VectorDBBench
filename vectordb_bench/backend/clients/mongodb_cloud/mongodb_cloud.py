@@ -53,7 +53,9 @@ class MongodbCloud(VectorDB):
                 name="vector_index",
                 type="vectorSearch",
             )
-            db.get_collection(collection_name).create_search_index(model=search_index_model)
+            db.get_collection(collection_name).create_search_index(
+                model=search_index_model
+            )
 
     @classmethod
     def config_cls(cls) -> Type[DBConfig]:
@@ -75,7 +77,7 @@ class MongodbCloud(VectorDB):
         pass
 
     def optimize(self):
-
+        pass
 
     def insert_embeddings(
         self,
