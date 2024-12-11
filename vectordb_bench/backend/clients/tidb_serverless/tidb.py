@@ -104,6 +104,10 @@ class TiDBServeless(VectorDB):
             else:
                 break
 
+        log.info("Waiting TiFlash to catch up...")
+        count = self._wait_tiflash_catch_up()
+        log.info(f"Finished, TiFlash scanned out {count} rows")
+
         log.info("Begin compact tiflash replica")
         self._compact_tiflash()
         log.info("Successful compacted tiflash replica")
@@ -142,6 +146,20 @@ class TiDBServeless(VectorDB):
                     result = cursor.fetchone()
                     return result[0]
                 except Exception as e:
+                    raise e from None
+
+    def _wait_tiflash_catch_up(self):
+        with self._ensure_connection() as conn:
+            with conn.cursor() as cursor:
+                try:
+                    cursor.execute('SET @@TIDB_ISOLATION_READ_ENGINES="tidb,tiflash"')
+                    conn.commit()
+                    # Wait TiFlash catch up by WaitIndex
+                    cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
+                    result = cursor.fetchone()
+                    return result[0]
+                except Exception as e:
+                    log.warning(f"Failed to wait TiFlash catch up data: {e}")
                     raise e from None
 
     def _get_tiflash_index_pending_rows(self):
